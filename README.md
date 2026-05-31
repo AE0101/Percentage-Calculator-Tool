@@ -1,8 +1,46 @@
 # Percentage Calculator Tool Desktop
 
-An offline Windows desktop percentage calculator built with Electron.
+An offline desktop percentage calculator built with Electron.
 
-This project began as a finished single-file HTML utility and was converted into a structured desktop app while preserving the original terminal-inspired UI and instant calculation behavior.
+This project turns a small browser-based percentage utility into a structured Windows desktop app. It keeps the original terminal-inspired interface and instant calculation flow, while adding desktop packaging, a safer Electron structure, automated checks, and project documentation.
+
+---
+
+## What This App Is
+
+Percentage Calculator Tool Desktop is a practical local utility for common percentage calculations.
+
+It is designed for quick use rather than account-based or cloud-connected workflows:
+
+- no login
+- no tracking
+- no network requirement at runtime
+- no stored user data
+- no database
+
+The app is intentionally small. Its value is speed, clarity, and an understandable codebase.
+
+---
+
+## Features
+
+The current version includes five calculator sections:
+
+- **Percentage Change** - shows increase or decrease from an original value
+- **Percentage of Total** - finds what percent one value is of another
+- **Calculate Percentage** - calculates X percent of a number
+- **Discount** - calculates final price and savings
+- **Find Original Value** - finds the full value from a known percentage
+
+Desktop polish includes:
+
+- live calculation while typing
+- Enter key support
+- copy-to-clipboard buttons with visible feedback
+- Clear All button
+- About dialog
+- Windows installer build
+- Windows portable build
 
 ---
 
@@ -12,25 +50,21 @@ Desktop v1.1.0
 
 ---
 
-## What It Does
+## How It Works
 
-The app includes five practical calculators:
+The app uses a simple Electron structure:
 
-- Percentage Change
-- Percentage of Total
-- Calculate Percentage
-- Discount
-- Find Original Value
+```text
+Electron main process
+-> preload bridge
+-> local renderer
+-> calculation helpers
+-> live result display
+```
 
-It also includes desktop polish:
+The renderer is plain HTML, CSS, and JavaScript. The calculation logic is separated into pure helper functions so the math can be tested without launching Electron.
 
-- live calculation while typing
-- Enter key support
-- copy buttons with visible feedback
-- Clear All button
-- About dialog
-- Windows installer build
-- Windows portable build
+Desktop-only capabilities, such as clipboard access and the About dialog, are exposed through a narrow preload API instead of giving the renderer direct Node/Electron access.
 
 ---
 
@@ -38,22 +72,29 @@ It also includes desktop polish:
 
 ```text
 electron/       Electron main process and preload bridge
-src/            Calculator interface, styles, renderer logic, and math helpers
+src/            Interface, styles, renderer logic, and calculation helpers
 tests/          Unit tests for calculator formulas
-scripts/        Local smoke-test launcher
+scripts/        Local Electron smoke-test launcher
 assets/         App icon assets
 reference/      Original finished HTML source
 Documentation/  Project context, architecture, roadmap, and session summary
 ```
 
-Generated build output is intentionally not committed.
+Generated build output is not committed to the repository.
+
+---
+
+## Install Dependencies
+
+```powershell
+npm install
+```
 
 ---
 
 ## Run Locally
 
 ```powershell
-npm install
 npm start
 ```
 
@@ -66,26 +107,23 @@ npm test
 npm run test:smoke
 ```
 
-The smoke test launches the real Electron app and verifies the renderer, preload bridge, live calculations, copy behavior, Clear All, version info, and clipboard bridge.
+The unit tests verify the calculation helpers.
+
+The smoke test launches the real Electron app and verifies the renderer, preload bridge, live calculations, copy behavior, Clear All behavior, version info, and clipboard bridge.
 
 ---
 
-## Build Windows Apps
+## Build
 
 ```powershell
 npm run build
 ```
 
-Build outputs are written to `dist/`:
+The build creates Windows desktop outputs under `dist/`:
 
-- `Percentage Calculator Tool Setup 1.1.0.exe`
-- `Percentage Calculator Tool Portable 1.1.0.exe`
-
-The clean user-facing copies are placed in:
-
-```text
-D:\Codex Projects\Percentage Calculator Tool Desktop - FINAL OUTPUT
-```
+- NSIS installer
+- portable executable
+- unpacked app folder
 
 ---
 
@@ -98,25 +136,18 @@ The main project documentation is in `Documentation/`:
 - `3- ROADMAP.md`
 - `4- SESSION_SUMMARY.md`
 
-These files explain why the tool exists, how the Electron version is structured, what was changed in each phase, and what happened during the development session.
+These files explain the purpose of the project, how the Electron architecture works, how the project evolved, and what happened during the development session.
 
 ---
 
-## Private GitHub Handoff
+## Design Philosophy
 
-This folder is already initialized as a local Git repository on `main`.
+This project favors:
 
-Because GitHub CLI is not currently installed on this machine, the private GitHub step is prepared but not pushed yet.
+- simplicity over feature bloat
+- offline use over cloud dependency
+- readable code over unnecessary frameworks
+- visible tests over manual-only confidence
+- documentation as part of the development process
 
-Two safe ways to publish later:
-
-```powershell
-# Option 1: after creating an empty private GitHub repo manually
-git remote add origin https://github.com/<owner>/<private-repo-name>.git
-git push -u origin main
-```
-
-```powershell
-# Option 2: after installing and authenticating GitHub CLI
-gh repo create <private-repo-name> --private --source . --remote origin --push
-```
+The goal is not to make a large product. The goal is to make a small utility feel complete, understandable, and maintainable.
