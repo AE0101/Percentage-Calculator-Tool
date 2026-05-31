@@ -7,6 +7,8 @@ import {
   formatDecimal
 } from "./calculations.js";
 
+const COPY_FEEDBACK_MS = 1200;
+
 function getNumber(id) {
   const el = document.getElementById(id);
   if (!el) return null;
@@ -27,14 +29,29 @@ function setResult(resultId, content, isError = false) {
   }
 }
 
-async function copyText(text) {
+function showCopyFeedback(button) {
+  if (!button) return;
+
+  const originalText = button.innerText;
+  button.innerText = "copied";
+  button.classList.add("copied");
+
+  window.setTimeout(() => {
+    button.innerText = originalText;
+    button.classList.remove("copied");
+  }, COPY_FEEDBACK_MS);
+}
+
+async function copyText(text, button) {
   try {
     if (window.percentageTool?.copyText) {
       await window.percentageTool.copyText(text);
+      showCopyFeedback(button);
       return;
     }
 
     await navigator.clipboard.writeText(text);
+    showCopyFeedback(button);
   } catch {
     // Clipboard failures should not interrupt the calculator.
   }
@@ -175,28 +192,49 @@ function resetFields(inputIds, resultId, updateFn) {
   updateFn();
 }
 
+function clearAllCalculators() {
+  resetFields(["changeOrig", "changeNew"], "changeResult", updateChangeLive);
+  resetFields(["isWhatX", "isWhatY"], "percentResult", updatePercentLive);
+  resetFields(["whatX", "whatY"], "whatResult", updateWhatLive);
+  resetFields(["discountPrice", "discountPercent"], "discountResult", updateDiscountLive);
+  resetFields(["baseX", "baseY"], "baseResult", updateBaseLive);
+  document.getElementById("changeOrig").focus();
+}
+
+async function syncAppInfo() {
+  if (!window.percentageTool?.getAppInfo) return;
+
+  const appInfo = await window.percentageTool.getAppInfo();
+  document.getElementById("appVersion").innerText = `Desktop v${appInfo.version}`;
+}
+
 function bindControls() {
+  document.getElementById("clearAllBtn").addEventListener("click", clearAllCalculators);
+  document.getElementById("aboutBtn").addEventListener("click", () => window.percentageTool?.showAboutDialog?.());
+
   document.getElementById("calcChangeBtn").addEventListener("click", updateChangeLive);
   document.getElementById("resetChangeBtn").addEventListener("click", () => resetFields(["changeOrig", "changeNew"], "changeResult", updateChangeLive));
-  document.getElementById("copyChangeBtn").addEventListener("click", () => copyText(document.getElementById("changeResult").innerText.replace(/^=\s*/, "")));
+  document.getElementById("copyChangeBtn").addEventListener("click", (event) => copyText(document.getElementById("changeResult").innerText.replace(/^=\s*/, ""), event.currentTarget));
 
   document.getElementById("calcPercentBtn").addEventListener("click", updatePercentLive);
   document.getElementById("resetPercentBtn").addEventListener("click", () => resetFields(["isWhatX", "isWhatY"], "percentResult", updatePercentLive));
-  document.getElementById("copyPercentBtn").addEventListener("click", () => copyText(document.getElementById("percentResult").innerText.replace(/^=\s*/, "")));
+  document.getElementById("copyPercentBtn").addEventListener("click", (event) => copyText(document.getElementById("percentResult").innerText.replace(/^=\s*/, ""), event.currentTarget));
 
   document.getElementById("calcWhatBtn").addEventListener("click", updateWhatLive);
   document.getElementById("resetWhatBtn").addEventListener("click", () => resetFields(["whatX", "whatY"], "whatResult", updateWhatLive));
-  document.getElementById("copyWhatBtn").addEventListener("click", () => copyText(document.getElementById("whatResult").innerText.replace(/^=\s*/, "")));
+  document.getElementById("copyWhatBtn").addEventListener("click", (event) => copyText(document.getElementById("whatResult").innerText.replace(/^=\s*/, ""), event.currentTarget));
 
   document.getElementById("calcDiscountBtn").addEventListener("click", updateDiscountLive);
   document.getElementById("resetDiscountBtn").addEventListener("click", () => resetFields(["discountPrice", "discountPercent"], "discountResult", updateDiscountLive));
-  document.getElementById("copyDiscountBtn").addEventListener("click", () => copyText(document.getElementById("discountResult").innerText.replace(/^=\s*/, "")));
+  document.getElementById("copyDiscountBtn").addEventListener("click", (event) => copyText(document.getElementById("discountResult").innerText.replace(/^=\s*/, ""), event.currentTarget));
 
   document.getElementById("calcBaseBtn").addEventListener("click", updateBaseLive);
   document.getElementById("resetBaseBtn").addEventListener("click", () => resetFields(["baseX", "baseY"], "baseResult", updateBaseLive));
-  document.getElementById("copyBaseBtn").addEventListener("click", () => copyText(document.getElementById("baseResult").innerText.replace(/^=\s*/, "")));
+  document.getElementById("copyBaseBtn").addEventListener("click", (event) => copyText(document.getElementById("baseResult").innerText.replace(/^=\s*/, ""), event.currentTarget));
 }
 
+// Each calculator owns its own inputs and live formula panel. Binding them in
+// one place makes it easier to audit the full app behavior.
 function bindLiveUpdates() {
   document.getElementById("changeOrig").addEventListener("input", updateChangeLive);
   document.getElementById("changeNew").addEventListener("input", updateChangeLive);
@@ -232,6 +270,7 @@ function initialize() {
   updateWhatLive();
   updateDiscountLive();
   updateBaseLive();
+  syncAppInfo();
 
   document.getElementById("changeOrig").focus();
 }

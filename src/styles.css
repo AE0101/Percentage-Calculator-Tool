@@ -23,6 +23,13 @@ body {
   padding-bottom: 1rem;
 }
 
+.header-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
 .header h1 {
   font-size: 1.6rem;
   font-weight: 500;
@@ -34,6 +41,13 @@ body {
   font-size: 0.8rem;
   color: #8f9aaf;
   margin-top: 0.3rem;
+}
+
+.header-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
 .calc-section {
@@ -139,7 +153,8 @@ body {
 }
 
 .reset-btn,
-.copy-btn {
+.copy-btn,
+.utility-btn {
   background: transparent;
   border: 1px solid #3a3f4c;
   color: #cbd5e6;
@@ -151,9 +166,15 @@ body {
 }
 
 .reset-btn:hover,
-.copy-btn:hover {
+.copy-btn:hover,
+.utility-btn:hover {
   border-color: #E9A715;
   color: #E9A715;
+}
+
+.copy-btn.copied {
+  border-color: #94C59A;
+  color: #94C59A;
 }
 
 .result {
@@ -214,6 +235,14 @@ footer {
 }
 
 @media (max-width: 760px) {
+  .header-row {
+    flex-direction: column;
+  }
+
+  .header-actions {
+    justify-content: flex-start;
+  }
+
   .calc-grid {
     grid-template-columns: 1fr;
     gap: 1rem;

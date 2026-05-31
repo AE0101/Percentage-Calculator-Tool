@@ -1,8 +1,19 @@
-const { app, BrowserWindow, Menu, clipboard, ipcMain } = require("electron");
+const { app, BrowserWindow, Menu, clipboard, dialog, ipcMain } = require("electron");
 const path = require("path");
 
 const isSmokeTest = process.argv.includes("--smoke-test");
 
+function getAppInfo() {
+  return {
+    name: "Percentage Calculator Tool",
+    version: app.getVersion(),
+    credits: "Directed by a Human, made by DeepSeek & ChatGPT",
+    privacy: "Fully offline. No tracking, no storage, no network calls."
+  };
+}
+
+// The smoke test runs inside the real Electron window. This catches renderer,
+// preload, and main-process integration problems that unit tests cannot see.
 async function runSmokeTest(mainWindow) {
   const result = await mainWindow.webContents.executeJavaScript(`
     (async () => {
@@ -16,6 +27,13 @@ async function runSmokeTest(mainWindow) {
 
       const checks = [];
       checks.push(document.activeElement.id === "changeOrig");
+      checks.push(typeof window.percentageTool.getAppInfo === "function");
+      checks.push(typeof window.percentageTool.showAboutDialog === "function");
+
+      const appInfo = await window.percentageTool.getAppInfo();
+      checks.push(appInfo.name === "Percentage Calculator Tool");
+      checks.push(appInfo.version === "1.1.0");
+      checks.push(document.getElementById("appVersion").innerText.includes("Desktop v1.1.0"));
 
       setValue("changeOrig", "150");
       setValue("changeNew", "180");
@@ -52,6 +70,22 @@ async function runSmokeTest(mainWindow) {
       setValue("baseY", "0");
       checks.push(text("baseResult").includes("Percent cannot be zero"));
 
+      document.getElementById("copyPercentBtn").click();
+      await new Promise((resolve) => setTimeout(resolve, 50));
+      checks.push(document.getElementById("copyPercentBtn").innerText === "copied");
+
+      document.getElementById("clearAllBtn").click();
+      checks.push(document.getElementById("changeOrig").value === "");
+      checks.push(document.getElementById("isWhatX").value === "");
+      checks.push(document.getElementById("whatX").value === "");
+      checks.push(document.getElementById("discountPrice").value === "");
+      checks.push(document.getElementById("baseX").value === "");
+      checks.push(text("changeResult").includes("—"));
+      checks.push(text("percentResult").includes("—"));
+      checks.push(text("whatResult").includes("—"));
+      checks.push(text("discountResult").includes("—"));
+      checks.push(text("baseResult").includes("—"));
+
       await window.percentageTool.copyText("percentage-tool-smoke-test");
 
       return checks.every(Boolean);
@@ -74,6 +108,8 @@ function createMainWindow() {
     backgroundColor: "#0E0F12",
     icon: path.join(__dirname, "..", "assets", "icon.ico"),
     webPreferences: {
+      // The renderer stays browser-like. Desktop capabilities are exposed only
+      // through the narrow preload API below.
       preload: path.join(__dirname, "preload.cjs"),
       contextIsolation: true,
       nodeIntegration: false,
@@ -96,6 +132,21 @@ function createMainWindow() {
 
 ipcMain.handle("clipboard:write-text", (_event, text) => {
   clipboard.writeText(String(text ?? ""));
+});
+
+ipcMain.handle("app:get-info", () => getAppInfo());
+
+ipcMain.handle("app:show-about-dialog", async () => {
+  const appInfo = getAppInfo();
+
+  await dialog.showMessageBox({
+    type: "info",
+    title: `About ${appInfo.name}`,
+    message: `${appInfo.name} Desktop v${appInfo.version}`,
+    detail: `${appInfo.credits}\n\n${appInfo.privacy}`,
+    buttons: ["OK"],
+    noLink: true
+  });
 });
 
 app.whenReady().then(() => {

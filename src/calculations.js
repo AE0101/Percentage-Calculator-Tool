@@ -1,3 +1,5 @@
+// Pure calculation helpers stay separate from the DOM so the math can be
+// tested without launching Electron.
 export function formatDecimal(value) {
   if (value === undefined || value === null || Number.isNaN(value)) return "?";
   const rounded = Math.round(value * 100) / 100;
