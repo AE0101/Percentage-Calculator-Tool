@@ -1,6 +1,54 @@
 # Percentage Calculator Tool Desktop
 
-Offline desktop version of the Percentage Calculator Tool, packaged with Electron for Windows.
+An offline Windows desktop percentage calculator built with Electron.
+
+This project began as a finished single-file HTML utility and was converted into a structured desktop app while preserving the original terminal-inspired UI and instant calculation behavior.
+
+---
+
+## Current Version
+
+Desktop v1.1.0
+
+---
+
+## What It Does
+
+The app includes five practical calculators:
+
+- Percentage Change
+- Percentage of Total
+- Calculate Percentage
+- Discount
+- Find Original Value
+
+It also includes desktop polish:
+
+- live calculation while typing
+- Enter key support
+- copy buttons with visible feedback
+- Clear All button
+- About dialog
+- Windows installer build
+- Windows portable build
+
+---
+
+## Project Structure
+
+```text
+electron/       Electron main process and preload bridge
+src/            Calculator interface, styles, renderer logic, and math helpers
+tests/          Unit tests for calculator formulas
+scripts/        Local smoke-test launcher
+assets/         App icon assets
+reference/      Original finished HTML source
+Documentation/  Project context, architecture, roadmap, and session summary
+```
+
+Generated build output is intentionally not committed.
+
+---
 
 ## Run Locally
 
@@ -9,11 +57,18 @@ npm install
 npm start
 ```
 
+---
+
 ## Test
 
 ```powershell
 npm test
+npm run test:smoke
 ```
+
+The smoke test launches the real Electron app and verifies the renderer, preload bridge, live calculations, copy behavior, Clear All, version info, and clipboard bridge.
+
+---
 
 ## Build Windows Apps
 
@@ -23,13 +78,24 @@ npm run build
 
 Build outputs are written to `dist/`:
 
-- Portable executable: `Percentage Calculator Tool Portable 1.0.0.exe`
-- Installer executable: `Percentage Calculator Tool Setup 1.0.0.exe`
+- `Percentage Calculator Tool Setup 1.1.0.exe`
+- `Percentage Calculator Tool Portable 1.1.0.exe`
 
-## Source Layout
+The clean user-facing copies are placed in:
 
-- `electron/main.cjs` creates the desktop window.
-- `electron/preload.cjs` exposes safe desktop APIs to the renderer.
-- `src/index.html`, `src/styles.css`, and `src/renderer.js` contain the calculator interface.
-- `src/calculations.js` contains tested calculation helpers.
-- `reference/Percentage Calculator Tool v1.1.html` is the original finished HTML source.
+```text
+D:\Codex Projects\Percentage Calculator Tool Desktop - FINAL OUTPUT
+```
+
+---
+
+## Documentation
+
+The main project documentation is in `Documentation/`:
+
+- `1- PROJECT_CONTEXT.md`
+- `2- ARCHITECTURE.md`
+- `3- ROADMAP.md`
+- `4- SESSION_SUMMARY.md`
+
+These files explain why the tool exists, how the Electron version is structured, what was changed in each phase, and what happened during the development session.
