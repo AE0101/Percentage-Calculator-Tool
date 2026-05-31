@@ -1,0 +1,25 @@
+# Dependencies
+node_modules/
+
+# Electron Builder output
+dist/
+release/
+out/
+
+# Local final-output copies live outside the repository, but keep this ignored
+# in case the folder is ever moved under the source project.
+*FINAL OUTPUT*/
+
+# Logs and diagnostics
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Local operating system files
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# Temporary install smoke-test folders
+pct-install-smoke/

@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>percent • terminal utility</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: #0E0F12;
+      font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', 'JetBrains Mono', monospace;
+      line-height: 1.5;
+      color: #e2e4e8;
+      padding: 2rem 1rem;
+    }
+
+    .app {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .header {
+      margin-bottom: 2rem;
+      border-bottom: 1px solid #2a2d35;
+      padding-bottom: 1rem;
+    }
+
+    .header h1 {
+      font-size: 1.6rem;
+      font-weight: 500;
+      letter-spacing: -0.5px;
+      color: #E9A715;
+    }
+
+    .header p {
+      font-size: 0.8rem;
+      color: #8f9aaf;
+      margin-top: 0.3rem;
+    }
+
+    .calc-section {
+      background: #161822;
+      margin-bottom: 1.8rem;
+      padding: 1.2rem 1.5rem;
+      border-left: 2px solid #E9A715;
+      transition: border-left-color 0.12s ease, background 0.12s ease;
+    }
+
+    .calc-section:hover {
+      border-left-color: #94C59A;
+    }
+
+    .calc-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.8rem;
+    }
+
+    .left-panel {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .section-title {
+      font-size: 0.9rem;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: #E9A715;
+      margin-bottom: 0.45rem;
+      border-left: 2px solid #E9A715;
+      padding-left: 0.7rem;
+    }
+
+    .section-subtitle {
+      font-size: 0.72rem;
+      color: #8f9aaf;
+      margin-bottom: 1rem;
+      padding-left: 0.85rem;
+    }
+
+    .input-row {
+      margin-bottom: 1rem;
+    }
+
+    .input-row label {
+      display: block;
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: #a3adc2;
+      margin-bottom: 0.25rem;
+      letter-spacing: 0.3px;
+    }
+
+    .input-row input {
+      width: 100%;
+      background: #0E0F12;
+      border: 1px solid #2d313c;
+      border-radius: 0;
+      padding: 0.55rem 0.7rem;
+      font-size: 0.85rem;
+      font-family: 'SF Mono', monospace;
+      color: #eef2ff;
+      outline: none;
+      transition: border-color 0.1s ease, box-shadow 0.1s ease;
+    }
+
+    .input-row input:focus {
+      border-color: #94C59A;
+      box-shadow: 0 0 0 1px #94C59A;
+    }
+
+    .input-row input::placeholder {
+      color: #454c5e;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+      margin: 0.5rem 0 1rem 0;
+      flex-wrap: wrap;
+    }
+
+    .calc-btn {
+      background: #E9A715;
+      border: none;
+      color: #0E0F12;
+      font-family: 'SF Mono', monospace;
+      font-weight: 600;
+      font-size: 0.8rem;
+      padding: 0.5rem 1.2rem;
+      cursor: pointer;
+      width: auto;
+      letter-spacing: 0.5px;
+      transition: opacity 0.1s ease;
+    }
+
+    .calc-btn:hover {
+      opacity: 0.9;
+    }
+
+    .reset-btn,
+    .copy-btn {
+      background: transparent;
+      border: 1px solid #3a3f4c;
+      color: #cbd5e6;
+      font-family: 'SF Mono', monospace;
+      font-size: 0.7rem;
+      padding: 0.4rem 1rem;
+      cursor: pointer;
+      transition: border-color 0.1s ease, color 0.1s ease;
+    }
+
+    .reset-btn:hover,
+    .copy-btn:hover {
+      border-color: #E9A715;
+      color: #E9A715;
+    }
+
+    .result {
+      background: #0E0F12;
+      border-left: 2px solid #E9A715;
+      padding: 0.7rem 1rem;
+      font-size: 1.08rem;
+      font-family: monospace;
+      margin-top: 0.2rem;
+      word-break: break-word;
+      color: #eef2ff;
+    }
+
+    .result-prefix {
+      color: #E9A715;
+      margin-right: 0.45rem;
+    }
+
+    .right-panel {
+      background: #0E0F12;
+      padding: 1rem;
+      border: 1px solid #2a2d35;
+      font-size: 0.8rem;
+    }
+
+    .formula-title {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      color: #94C59A;
+      letter-spacing: 1px;
+      margin-bottom: 0.8rem;
+      border-bottom: 1px solid #2a2d35;
+      display: inline-block;
+      padding-bottom: 0.2rem;
+    }
+
+    .live-formula {
+      font-family: monospace;
+      line-height: 1.7;
+      color: #cbd5e6;
+    }
+
+    .live-result {
+      margin-top: 1rem;
+      padding-top: 0.7rem;
+      border-top: 1px solid #2a2d35;
+      color: #E9A715;
+      font-weight: 500;
+    }
+
+    footer {
+      margin-top: 2rem;
+      font-size: 0.7rem;
+      color: #5d6a83;
+      text-align: center;
+      border-top: 1px solid #2a2d35;
+      padding-top: 1rem;
+    }
+
+    @media (max-width: 760px) {
+      .calc-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+      }
+
+      .calc-section {
+        padding: 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <h1>Percentage Calculator Tool</h1>
+    <p>offline · local · clean</p>
+  </div>
+
+  <!-- 1. Percentage change -->
+  <div class="calc-section">
+    <div class="calc-grid">
+      <div class="left-panel">
+        <div class="section-title">Percentage Change</div>
+        <div class="section-subtitle">Shows how much a value increased or decreased relative to the original.</div>
+
+        <div class="input-row">
+          <label>Original value</label>
+          <input type="number" id="changeOrig" placeholder="e.g., 150" step="any">
+        </div>
+        <div class="input-row">
+          <label>New value</label>
+          <input type="number" id="changeNew" placeholder="e.g., 180" step="any">
+        </div>
+
+        <div class="button-group">
+          <button class="calc-btn" id="calcChangeBtn">calculate</button>
+          <button class="reset-btn" id="resetChangeBtn">clear</button>
+          <button class="copy-btn" id="copyChangeBtn">copy</button>
+        </div>
+
+        <div class="result" id="changeResult">—</div>
+      </div>
+
+      <div class="right-panel">
+        <div class="formula-title">live formula</div>
+        <div class="live-formula" id="changeLiveFormula">((new − original) / original) × 100</div>
+        <div class="live-result" id="changeLiveResult">→ —</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. Percentage of total -->
+  <div class="calc-section">
+    <div class="calc-grid">
+      <div class="left-panel">
+        <div class="section-title">Percentage of Total</div>
+        <div class="section-subtitle">Finds what percentage one number is of another.</div>
+
+        <div class="input-row">
+          <label>X (part)</label>
+          <input type="number" id="isWhatX" placeholder="e.g., 50" step="any">
+        </div>
+        <div class="input-row">
+          <label>Y (total)</label>
+          <input type="number" id="isWhatY" placeholder="e.g., 200" step="any">
+        </div>
+
+        <div class="button-group">
+          <button class="calc-btn" id="calcPercentBtn">calculate</button>
+          <button class="reset-btn" id="resetPercentBtn">clear</button>
+          <button class="copy-btn" id="copyPercentBtn">copy</button>
+        </div>
+
+        <div class="result" id="percentResult">—</div>
+      </div>
+
+      <div class="right-panel">
+        <div class="formula-title">live formula</div>
+        <div class="live-formula" id="percentLiveFormula">(X / Y) × 100</div>
+        <div class="live-result" id="percentLiveResult">→ —</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. Calculate percentage -->
+  <div class="calc-section">
+    <div class="calc-grid">
+      <div class="left-panel">
+        <div class="section-title">Calculate Percentage</div>
+        <div class="section-subtitle">Calculates a percentage portion of a number.</div>
+
+        <div class="input-row">
+          <label>X (percent)</label>
+          <input type="number" id="whatX" placeholder="e.g., 20" step="any">
+        </div>
+        <div class="input-row">
+          <label>Y (number)</label>
+          <input type="number" id="whatY" placeholder="e.g., 500" step="any">
+        </div>
+
+        <div class="button-group">
+          <button class="calc-btn" id="calcWhatBtn">calculate</button>
+          <button class="reset-btn" id="resetWhatBtn">clear</button>
+          <button class="copy-btn" id="copyWhatBtn">copy</button>
+        </div>
+
+        <div class="result" id="whatResult">—</div>
+      </div>
+
+      <div class="right-panel">
+        <div class="formula-title">live formula</div>
+        <div class="live-formula" id="whatLiveFormula">(X / 100) × Y</div>
+        <div class="live-result" id="whatLiveResult">→ —</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. Discount -->
+  <div class="calc-section">
+    <div class="calc-grid">
+      <div class="left-panel">
+        <div class="section-title">Discount</div>
+        <div class="section-subtitle">Calculates final price and savings after a percentage discount.</div>
+
+        <div class="input-row">
+          <label>Original price</label>
+          <input type="number" id="discountPrice" placeholder="e.g., 79.99" step="any">
+        </div>
+        <div class="input-row">
+          <label>Discount (%)</label>
+          <input type="number" id="discountPercent" placeholder="e.g., 20" step="any">
+        </div>
+
+        <div class="button-group">
+          <button class="calc-btn" id="calcDiscountBtn">calculate</button>
+          <button class="reset-btn" id="resetDiscountBtn">clear</button>
+          <button class="copy-btn" id="copyDiscountBtn">copy</button>
+        </div>
+
+        <div class="result" id="discountResult">—</div>
+      </div>
+
+      <div class="right-panel">
+        <div class="formula-title">live formula</div>
+        <div class="live-formula" id="discountLiveFormula">final = price × (1 − discount/100)<br>saved = price × discount/100</div>
+        <div class="live-result" id="discountLiveResult">→ —</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. Find original value -->
+  <div class="calc-section">
+    <div class="calc-grid">
+      <div class="left-panel">
+        <div class="section-title">Find Original Value</div>
+        <div class="section-subtitle">Finds the full number when you know a value and its percentage.</div>
+
+        <div class="input-row">
+          <label>X (value)</label>
+          <input type="number" id="baseX" placeholder="e.g., 50" step="any">
+        </div>
+        <div class="input-row">
+          <label>Y (percent)</label>
+          <input type="number" id="baseY" placeholder="e.g., 25" step="any">
+        </div>
+
+        <div class="button-group">
+          <button class="calc-btn" id="calcBaseBtn">calculate</button>
+          <button class="reset-btn" id="resetBaseBtn">clear</button>
+          <button class="copy-btn" id="copyBaseBtn">copy</button>
+        </div>
+
+        <div class="result" id="baseResult">—</div>
+      </div>
+
+      <div class="right-panel">
+        <div class="formula-title">live formula</div>
+        <div class="live-formula" id="baseLiveFormula">X / (Y / 100)</div>
+        <div class="live-result" id="baseLiveResult">→ —</div>
+      </div>
+    </div>
+  </div>
+
+  <footer>Directed by a Human, made by DeepSeek & ChatGPT · 2026</footer>
+</div>
+
+<script>
+  (function () {
+    function getNumber(id) {
+      const el = document.getElementById(id);
+      if (!el) return null;
+      const val = el.value.trim();
+      if (val === "") return null;
+      const num = parseFloat(val);
+      return isNaN(num) ? null : num;
+    }
+
+    function formatDecimal(value) {
+      if (value === undefined || value === null || isNaN(value)) return "?";
+      const rounded = Math.round(value * 100) / 100;
+      return rounded.toFixed(2);
+    }
+
+    function setResult(resultId, content, isError = false) {
+      const el = document.getElementById(resultId);
+      if (!el) return;
+      if (isError) {
+        el.innerHTML = `<span class="result-prefix">=</span><span style="color:#E9A715;">${content}</span>`;
+      } else {
+        el.innerHTML = `<span class="result-prefix">=</span>${content}`;
+      }
+    }
+
+    async function copyText(text) {
+      try {
+        await navigator.clipboard.writeText(text);
+      } catch {
+        // fail silently
+      }
+    }
+
+    function attachEnterKey(ids, computeFn) {
+      ids.forEach(id => {
+        const el = document.getElementById(id);
+        el.addEventListener("keydown", function (e) {
+          if (e.key === "Enter") computeFn();
+        });
+      });
+    }
+
+    // 1. Percentage change
+    function updateChangeLive() {
+      const orig = getNumber("changeOrig");
+      const newVal = getNumber("changeNew");
+      const formulaDiv = document.getElementById("changeLiveFormula");
+      const resultSpan = document.getElementById("changeLiveResult");
+
+      if (orig === null || newVal === null) {
+        formulaDiv.innerHTML = `((new − original) / original) × 100`;
+        resultSpan.innerHTML = `→ —`;
+        setResult("changeResult", "—");
+        return;
+      }
+
+      if (orig === 0) {
+        formulaDiv.innerHTML = `((new − original) / original) × 100 <span style="color:#E9A715;">(original cannot be zero)</span>`;
+        resultSpan.innerHTML = `→ invalid`;
+        setResult("changeResult", "Original value cannot be zero", true);
+        return;
+      }
+
+      const change = ((newVal - orig) / orig) * 100;
+      const absChange = Math.abs(change);
+
+      formulaDiv.innerHTML = `((${newVal} − ${orig}) / ${orig}) × 100`;
+      resultSpan.innerHTML = `→ ${formatDecimal(absChange)}% ${change > 0 ? "increase" : change < 0 ? "decrease" : "no change"}`;
+
+      if (change > 0) {
+        setResult("changeResult", `${formatDecimal(absChange)}% increase`);
+      } else if (change < 0) {
+        setResult("changeResult", `${formatDecimal(absChange)}% decrease`);
+      } else {
+        setResult("changeResult", `0.00% no change`);
+      }
+    }
+
+    function computeChange() {
+      updateChangeLive();
+    }
+
+    function resetChange() {
+      document.getElementById("changeOrig").value = "";
+      document.getElementById("changeNew").value = "";
+      setResult("changeResult", "—");
+      updateChangeLive();
+    }
+
+    // 2. Percentage of total
+    function updatePercentLive() {
+      const x = getNumber("isWhatX");
+      const y = getNumber("isWhatY");
+      const formulaDiv = document.getElementById("percentLiveFormula");
+      const resultSpan = document.getElementById("percentLiveResult");
+
+      if (x === null || y === null) {
+        formulaDiv.innerHTML = `(X / Y) × 100`;
+        resultSpan.innerHTML = `→ —`;
+        setResult("percentResult", "—");
+        return;
+      }
+
+      if (y === 0) {
+        formulaDiv.innerHTML = `(X / Y) × 100 <span style="color:#E9A715;">(Y cannot be zero)</span>`;
+        resultSpan.innerHTML = `→ invalid`;
+        setResult("percentResult", "Total cannot be zero", true);
+        return;
+      }
+
+      const pct = (x / y) * 100;
+      formulaDiv.innerHTML = `(${x} / ${y}) × 100`;
+      resultSpan.innerHTML = `→ ${formatDecimal(pct)}%`;
+      setResult("percentResult", `${formatDecimal(pct)}%`);
+    }
+
+    function computePercent() {
+      updatePercentLive();
+    }
+
+    function resetPercent() {
+      document.getElementById("isWhatX").value = "";
+      document.getElementById("isWhatY").value = "";
+      setResult("percentResult", "—");
+      updatePercentLive();
+    }
+
+    // 3. Calculate percentage
+    function updateWhatLive() {
+      const x = getNumber("whatX");
+      const y = getNumber("whatY");
+      const formulaDiv = document.getElementById("whatLiveFormula");
+      const resultSpan = document.getElementById("whatLiveResult");
+
+      if (x === null || y === null) {
+        formulaDiv.innerHTML = `(X / 100) × Y`;
+        resultSpan.innerHTML = `→ —`;
+        setResult("whatResult", "—");
+        return;
+      }
+
+      const value = (x / 100) * y;
+      formulaDiv.innerHTML = `(${x} / 100) × ${y}`;
+      resultSpan.innerHTML = `→ ${formatDecimal(value)}`;
+      setResult("whatResult", `${formatDecimal(value)}`);
+    }
+
+    function computeWhat() {
+      updateWhatLive();
+    }
+
+    function resetWhat() {
+      document.getElementById("whatX").value = "";
+      document.getElementById("whatY").value = "";
+      setResult("whatResult", "—");
+      updateWhatLive();
+    }
+
+    // 4. Discount
+    function updateDiscountLive() {
+      const price = getNumber("discountPrice");
+      const disc = getNumber("discountPercent");
+      const formulaDiv = document.getElementById("discountLiveFormula");
+      const resultSpan = document.getElementById("discountLiveResult");
+
+      if (price === null || disc === null) {
+        formulaDiv.innerHTML = `final = price × (1 − discount/100)<br>saved = price × discount/100`;
+        resultSpan.innerHTML = `→ —`;
+        setResult("discountResult", "—");
+        return;
+      }
+
+      const saved = price * (disc / 100);
+      const finalPrice = price - saved;
+
+      formulaDiv.innerHTML = `final = ${price} × (1 − ${disc}/100) = ${formatDecimal(finalPrice)}<br>saved = ${price} × ${disc}/100 = ${formatDecimal(saved)}`;
+      resultSpan.innerHTML = `→ final: ${formatDecimal(finalPrice)} | saved: ${formatDecimal(saved)}`;
+      setResult("discountResult", `Final: ${formatDecimal(finalPrice)}<br>Saved: ${formatDecimal(saved)}`);
+    }
+
+    function computeDiscount() {
+      updateDiscountLive();
+    }
+
+    function resetDiscount() {
+      document.getElementById("discountPrice").value = "";
+      document.getElementById("discountPercent").value = "";
+      setResult("discountResult", "—");
+      updateDiscountLive();
+    }
+
+    // 5. Find original value
+    function updateBaseLive() {
+      const x = getNumber("baseX");
+      const y = getNumber("baseY");
+      const formulaDiv = document.getElementById("baseLiveFormula");
+      const resultSpan = document.getElementById("baseLiveResult");
+
+      if (x === null || y === null) {
+        formulaDiv.innerHTML = `X / (Y / 100)`;
+        resultSpan.innerHTML = `→ —`;
+        setResult("baseResult", "—");
+        return;
+      }
+
+      if (y === 0) {
+        formulaDiv.innerHTML = `X / (Y / 100) <span style="color:#E9A715;">(Y cannot be zero)</span>`;
+        resultSpan.innerHTML = `→ invalid`;
+        setResult("baseResult", "Percent cannot be zero", true);
+        return;
+      }
+
+      const whole = x / (y / 100);
+      formulaDiv.innerHTML = `${x} / (${y} / 100)`;
+      resultSpan.innerHTML = `→ ${formatDecimal(whole)}`;
+      setResult("baseResult", `${formatDecimal(whole)}`);
+    }
+
+    function computeBase() {
+      updateBaseLive();
+    }
+
+    function resetBase() {
+      document.getElementById("baseX").value = "";
+      document.getElementById("baseY").value = "";
+      setResult("baseResult", "—");
+      updateBaseLive();
+    }
+
+    // Buttons
+    document.getElementById("calcChangeBtn").addEventListener("click", computeChange);
+    document.getElementById("resetChangeBtn").addEventListener("click", resetChange);
+    document.getElementById("copyChangeBtn").addEventListener("click", () => copyText(document.getElementById("changeResult").innerText.replace(/^=\s*/, "")));
+
+    document.getElementById("calcPercentBtn").addEventListener("click", computePercent);
+    document.getElementById("resetPercentBtn").addEventListener("click", resetPercent);
+    document.getElementById("copyPercentBtn").addEventListener("click", () => copyText(document.getElementById("percentResult").innerText.replace(/^=\s*/, "")));
+
+    document.getElementById("calcWhatBtn").addEventListener("click", computeWhat);
+    document.getElementById("resetWhatBtn").addEventListener("click", resetWhat);
+    document.getElementById("copyWhatBtn").addEventListener("click", () => copyText(document.getElementById("whatResult").innerText.replace(/^=\s*/, "")));
+
+    document.getElementById("calcDiscountBtn").addEventListener("click", computeDiscount);
+    document.getElementById("resetDiscountBtn").addEventListener("click", resetDiscount);
+    document.getElementById("copyDiscountBtn").addEventListener("click", () => copyText(document.getElementById("discountResult").innerText.replace(/^=\s*/, "")));
+
+    document.getElementById("calcBaseBtn").addEventListener("click", computeBase);
+    document.getElementById("resetBaseBtn").addEventListener("click", resetBase);
+    document.getElementById("copyBaseBtn").addEventListener("click", () => copyText(document.getElementById("baseResult").innerText.replace(/^=\s*/, "")));
+
+    // Live input updates
+    document.getElementById("changeOrig").addEventListener("input", updateChangeLive);
+    document.getElementById("changeNew").addEventListener("input", updateChangeLive);
+
+    document.getElementById("isWhatX").addEventListener("input", updatePercentLive);
+    document.getElementById("isWhatY").addEventListener("input", updatePercentLive);
+
+    document.getElementById("whatX").addEventListener("input", updateWhatLive);
+    document.getElementById("whatY").addEventListener("input", updateWhatLive);
+
+    document.getElementById("discountPrice").addEventListener("input", updateDiscountLive);
+    document.getElementById("discountPercent").addEventListener("input", updateDiscountLive);
+
+    document.getElementById("baseX").addEventListener("input", updateBaseLive);
+    document.getElementById("baseY").addEventListener("input", updateBaseLive);
+
+    // Enter key support
+    attachEnterKey(["changeOrig", "changeNew"], computeChange);
+    attachEnterKey(["isWhatX", "isWhatY"], computePercent);
+    attachEnterKey(["whatX", "whatY"], computeWhat);
+    attachEnterKey(["discountPrice", "discountPercent"], computeDiscount);
+    attachEnterKey(["baseX", "baseY"], computeBase);
+
+    // Initial state
+    updateChangeLive();
+    updatePercentLive();
+    updateWhatLive();
+    updateDiscountLive();
+    updateBaseLive();
+
+    // Smart focus
+    document.getElementById("changeOrig").focus();
+  })();
+</script>
+</body>
+</html>
