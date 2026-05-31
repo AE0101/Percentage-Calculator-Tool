@@ -99,3 +99,24 @@ The main project documentation is in `Documentation/`:
 - `4- SESSION_SUMMARY.md`
 
 These files explain why the tool exists, how the Electron version is structured, what was changed in each phase, and what happened during the development session.
+
+---
+
+## Private GitHub Handoff
+
+This folder is already initialized as a local Git repository on `main`.
+
+Because GitHub CLI is not currently installed on this machine, the private GitHub step is prepared but not pushed yet.
+
+Two safe ways to publish later:
+
+```powershell
+# Option 1: after creating an empty private GitHub repo manually
+git remote add origin https://github.com/<owner>/<private-repo-name>.git
+git push -u origin main
+```
+
+```powershell
+# Option 2: after installing and authenticating GitHub CLI
+gh repo create <private-repo-name> --private --source . --remote origin --push
+```
