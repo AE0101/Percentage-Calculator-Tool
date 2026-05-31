@@ -6,6 +6,14 @@ This project turns a small browser-based percentage utility into a structured Wi
 
 ---
 
+## Built With Codex
+
+This project was human-directed and built with Codex as the AI coding collaborator.
+
+Codex helped convert the original single-file HTML utility into a structured Electron desktop app, add tests, prepare Windows packaging, write project documentation, and maintain the local Git/GitHub workflow. The project remains intentionally transparent about that collaboration because the development process is part of the value of the repository.
+
+---
+
 ## What This App Is
 
 Percentage Calculator Tool Desktop is a practical local utility for common percentage calculations.
